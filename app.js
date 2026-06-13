@@ -55,6 +55,7 @@ function init() {
     window.location.hash = '';
   }
   
+  buildBoard();
   initDailyGame();
   
   // Build keyboard layout
