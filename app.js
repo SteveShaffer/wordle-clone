@@ -548,7 +548,18 @@ function saveSettings() {
 function loadStats() {
   const stored = localStorage.getItem('wordle_stats');
   if (stored) {
-    state.stats = JSON.parse(stored);
+    try {
+      const parsed = JSON.parse(stored);
+      // Migration from old schema (which had separate daily/practice records)
+      if (parsed && parsed.daily) {
+        state.stats = parsed.daily;
+        saveStats(); // Save migrated schema back to localStorage
+      } else {
+        state.stats = parsed;
+      }
+    } catch (e) {
+      console.error('Failed to parse stats:', e);
+    }
   }
 }
 
