@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wordle Premium - Daily Challenge & Unlimited Practice</title>
+  <meta name="description" content="Play Wordle Premium. Enjoy the classic daily word puzzle and unlimited practice mode with gorgeous themes, streaks tracking, and hard mode.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Canvas Confetti for Win Effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=1.0.1">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="header-left">
+        <button id="btn-help" class="icon-button" aria-label="How to play" title="How to Play">
+          <i class="fa-regular fa-circle-question"></i>
+        </button>
+        <div class="mode-selector" role="group" aria-label="Game Mode">
+          <button id="mode-daily" class="mode-button active" aria-pressed="true">Daily</button>
+          <button id="mode-practice" class="mode-button" aria-pressed="false">Practice</button>
+        </div>
+      </div>
+      
+      <div class="header-center">
+        <h1>Wordle<span class="logo-accent">Premium</span></h1>
+      </div>
+      
+      <div class="header-right">
+        <button id="btn-stats" class="icon-button" aria-label="Statistics" title="Statistics">
+          <i class="fa-solid fa-chart-simple"></i>
+        </button>
+        <button id="btn-settings" class="icon-button" aria-label="Settings" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Board Container -->
+    <main id="board-container">
+      <div id="board" role="grid" aria-label="Wordle Board" aria-readonly="true">
+        <!-- Rows will be injected by JavaScript for scalability and clean template control -->
+      </div>
+    </main>
+
+    <!-- Keyboard Container -->
+    <section id="keyboard-container" aria-label="Keyboard">
+      <div class="keyboard-row" id="kb-row-1"></div>
+      <div class="keyboard-row" id="kb-row-2"></div>
+      <div class="keyboard-row" id="kb-row-3"></div>
+    </section>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- HELP DIALOG -->
+  <dialog id="help-dialog" closedby="any" aria-labelledby="help-title">
+    <div class="dialog-content">
+      <header class="dialog-header">
+        <h2 id="help-title">How To Play</h2>
+        <button class="close-button" aria-label="Close dialog" onclick="this.closest('dialog').close()">&times;</button>
+      </header>
+      <div class="dialog-body">
+        <p class="intro-text">Guess the Wordle in 6 tries. Each guess must be a valid 5-letter word.</p>
+        
+        <ul class="rules-list">
+          <li>The color of the tiles will change to show how close your guess was to the word.</li>
+          <li>In <strong>Daily Mode</strong>, a new secret word is generated every day.</li>
+          <li>In <strong>Practice Mode</strong>, you can play as many times as you like.</li>
+        </ul>
+
+        <hr class="divider">
+
+        <h3>Examples</h3>
+        
+        <div class="example-item">
+          <div class="example-grid">
+            <div class="tile state-correct">W</div>
+            <div class="tile">E</div>
+            <div class="tile">A</div>
+            <div class="tile">R</div>
+            <div class="tile">Y</div>
+          </div>
+          <p><strong>W</strong> is in the word and in the correct spot.</p>
+        </div>
+
+        <div class="example-item">
+          <div class="example-grid">
+            <div class="tile">P</div>
+            <div class="tile state-present">I</div>
+            <div class="tile">L</div>
+            <div class="tile">O</div>
+            <div class="tile">T</div>
+          </div>
+          <p><strong>I</strong> is in the word but in the wrong spot.</p>
+        </div>
+
+        <div class="example-item">
+          <div class="example-grid">
+            <div class="tile">V</div>
+            <div class="tile">A</div>
+            <div class="tile">G</div>
+            <div class="tile state-absent">U</div>
+            <div class="tile">E</div>
+          </div>
+          <p><strong>U</strong> is not in the word in any spot.</p>
+        </div>
+        
+        <hr class="divider">
+        
+        <button class="primary-button" onclick="this.closest('dialog').close()">Start Playing</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- STATISTICS DIALOG -->
+  <dialog id="stats-dialog" closedby="any" aria-labelledby="stats-title">
+    <div class="dialog-content">
+      <header class="dialog-header">
+        <h2 id="stats-title">Statistics</h2>
+        <button class="close-button" aria-label="Close dialog" onclick="this.closest('dialog').close()">&times;</button>
+      </header>
+      <div class="dialog-body">
+        <div class="stats-mode-indicator" id="stats-active-mode">DAILY CHALLENGE</div>
+        
+        <!-- Stats Numbers Grid -->
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="stat-played">0</div>
+            <div class="stat-lbl">Played</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="stat-win-pct">0</div>
+            <div class="stat-lbl">Win %</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="stat-streak">0</div>
+            <div class="stat-lbl">Current Streak</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="stat-max-streak">0</div>
+            <div class="stat-lbl">Max Streak</div>
+          </div>
+        </div>
+
+        <!-- Guess Distribution -->
+        <h3>Guess Distribution</h3>
+        <div id="guess-distribution" class="distribution-chart">
+          <!-- Bars will be dynamically updated by Javascript -->
+          <div class="dist-row">
+            <span class="dist-num">1</span>
+            <div class="dist-bar-wrapper"><div class="dist-bar" style="width: 0%">0</div></div>
+          </div>
+          <div class="dist-row">
+            <span class="dist-num">2</span>
+            <div class="dist-bar-wrapper"><div class="dist-bar" style="width: 0%">0</div></div>
+          </div>
+          <div class="dist-row">
+            <span class="dist-num">3</span>
+            <div class="dist-bar-wrapper"><div class="dist-bar" style="width: 0%">0</div></div>
+          </div>
+          <div class="dist-row">
+            <span class="dist-num">4</span>
+            <div class="dist-bar-wrapper"><div class="dist-bar" style="width: 0%">0</div></div>
+          </div>
+          <div class="dist-row">
+            <span class="dist-num">5</span>
+            <div class="dist-bar-wrapper"><div class="dist-bar" style="width: 0%">0</div></div>
+          </div>
+          <div class="dist-row">
+            <span class="dist-num">6</span>
+            <div class="dist-bar-wrapper"><div class="dist-bar" style="width: 0%">0</div></div>
+          </div>
+        </div>
+
+        <!-- Footer actions & Daily countdown -->
+        <div class="stats-footer" id="stats-footer-daily">
+          <div class="countdown-section">
+            <span class="countdown-label">NEXT WORDLE</span>
+            <span class="countdown-time" id="next-wordle-timer">00:00:00</span>
+          </div>
+          <button id="btn-share" class="share-button">
+            Share <i class="fa-solid fa-share-nodes"></i>
+          </button>
+        </div>
+
+        <div class="stats-footer hidden" id="stats-footer-practice">
+          <button id="btn-practice-new" class="primary-button full-width">
+            Play Again <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- SETTINGS DIALOG -->
+  <dialog id="settings-dialog" closedby="any" aria-labelledby="settings-title">
+    <div class="dialog-content">
+      <header class="dialog-header">
+        <h2 id="settings-title">Settings</h2>
+        <button class="close-button" aria-label="Close dialog" onclick="this.closest('dialog').close()">&times;</button>
+      </header>
+      <div class="dialog-body">
+        
+        <!-- Hard Mode Setting -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">Hard Mode</span>
+            <span class="setting-desc">Any revealed hints must be used in subsequent guesses</span>
+          </div>
+          <label class="switch-container">
+            <input type="checkbox" id="setting-hard-mode" autocomplete="off">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+
+        <hr class="settings-divider">
+
+        <!-- Dark Theme Setting -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">Dark Theme</span>
+            <span class="setting-desc">Toggle between dark and light modes</span>
+          </div>
+          <label class="switch-container">
+            <input type="checkbox" id="setting-dark-theme" checked autocomplete="off">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+
+        <hr class="settings-divider">
+
+        <!-- High Contrast Mode Setting -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">High Contrast Mode</span>
+            <span class="setting-desc">Contrast-friendly colors (orange/blue instead of green/yellow)</span>
+          </div>
+          <label class="switch-container">
+            <input type="checkbox" id="setting-high-contrast" autocomplete="off">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+
+        <hr class="settings-divider">
+
+        <div class="about-section">
+          <p>Wordle Premium v1.0.0</p>
+          <p class="about-credits">Created with premium styling & localStorage tracking.</p>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- App Logic Module -->
+  <script type="module" src="app.js?v=1.0.1"></script>
+</body>
+</html>

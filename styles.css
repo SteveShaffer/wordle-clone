@@ -1,0 +1,867 @@
+/* Design System & Variables */
+:root {
+  /* Font Families */
+  --font-title: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Theme Defaults (Dark Theme as default) */
+  --bg-gradient-start: #1e1e24;
+  --bg-gradient-end: #121213;
+  --bg-color: #121213;
+  --text-color: #f8f9fa;
+  --text-muted: #a0aec0;
+  
+  --border-default: #3a3a3c;
+  --border-active: #565758;
+  
+  --key-bg: #818384;
+  --key-bg-hover: #939596;
+  --key-text: #f8f9fa;
+  
+  --dialog-bg: rgba(26, 26, 29, 0.92);
+  --dialog-border: rgba(255, 255, 255, 0.08);
+  --dialog-shadow: rgba(0, 0, 0, 0.5);
+  
+  --toast-bg: rgba(248, 249, 250, 0.95);
+  --toast-text: #121213;
+
+  /* Tile Colors - Default Palette */
+  --color-correct: #6aaa64;
+  --color-present: #c9b458;
+  --color-absent: #3a3a3c;
+  
+  /* Layout constraints */
+  --header-height: 64px;
+}
+
+/* Light Theme Variables */
+body.light-theme {
+  --bg-gradient-start: #f7fafc;
+  --bg-gradient-end: #edf2f7;
+  --bg-color: #f7fafc;
+  --text-color: #1a202c;
+  --text-muted: #4a5568;
+  
+  --border-default: #d3d6da;
+  --border-active: #878a8c;
+  
+  --key-bg: #d3d6da;
+  --key-bg-hover: #c4c7cc;
+  --key-text: #1a202c;
+  
+  --dialog-bg: rgba(255, 255, 255, 0.94);
+  --dialog-border: rgba(0, 0, 0, 0.08);
+  --dialog-shadow: rgba(0, 0, 0, 0.15);
+  
+  --toast-bg: rgba(18, 18, 19, 0.95);
+  --toast-text: #ffffff;
+  
+  /* Tile Colors - Default Palette (Light Mode) */
+  --color-correct: #6aaa64;
+  --color-present: #c9b458;
+  --color-absent: #787c7e;
+}
+
+/* High Contrast Color Overrides */
+body.high-contrast {
+  --color-correct: #f5793a; /* Orange */
+  --color-present: #85c0f9; /* Blue */
+}
+
+/* Base resets & layout */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font-body);
+  background-color: var(--bg-color);
+  background-image: radial-gradient(circle at center, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  color: var(--text-color);
+  transition: background-color 0.4s, background-image 0.4s, color 0.4s;
+}
+
+#game-container {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Header */
+.game-header {
+  height: var(--header-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-default);
+  z-index: 10;
+}
+
+.game-header h1 {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+}
+
+.logo-accent {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #6aaa64, #c9b458);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-left: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(199, 180, 88, 0.3);
+}
+
+body.high-contrast .logo-accent {
+  background: linear-gradient(135deg, #f5793a, #85c0f9);
+  -webkit-background-clip: text;
+  border-color: rgba(133, 192, 249, 0.3);
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.icon-button:hover {
+  background-color: rgba(128, 128, 128, 0.15);
+}
+
+.icon-button:active {
+  transform: scale(0.92);
+}
+
+/* Mode selector */
+.mode-selector {
+  display: flex;
+  background-color: rgba(128, 128, 128, 0.1);
+  padding: 3px;
+  border-radius: 20px;
+  margin-left: 8px;
+  border: 1px solid var(--border-default);
+}
+
+.mode-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 5px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-button.active {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Board Layout */
+#board-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+#board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 5 / 6;
+}
+
+.board-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+/* Tiles styling */
+.tile {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border: 2px solid var(--border-default);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  user-select: none;
+  color: var(--text-color);
+  background-color: transparent;
+  transition: border-color 0.1s;
+}
+
+/* Animated tile pop */
+.tile.pop {
+  animation: tilePop 0.15s ease-out;
+  border-color: var(--border-active);
+}
+
+/* Tile flip and color states */
+.tile.flip {
+  animation: tileFlip 0.5s ease-in-out forwards;
+}
+
+/* Reveal tile values after flip */
+.tile.state-correct {
+  background-color: var(--color-correct) !important;
+  border-color: var(--color-correct) !important;
+  color: #ffffff !important;
+}
+
+.tile.state-present {
+  background-color: var(--color-present) !important;
+  border-color: var(--color-present) !important;
+  color: #ffffff !important;
+}
+
+.tile.state-absent {
+  background-color: var(--color-absent) !important;
+  border-color: var(--color-absent) !important;
+  color: #ffffff !important;
+}
+
+/* Shaking row when word is invalid */
+.board-row.shake {
+  animation: rowShake 0.25s ease-in-out;
+}
+
+/* Keyboard Layout */
+#keyboard-container {
+  padding: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 6px;
+  touch-action: manipulation;
+}
+
+.keyboard-key {
+  flex: 1;
+  height: 58px;
+  background-color: var(--key-bg);
+  color: var(--key-text);
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  transition: background-color 0.15s, transform 0.05s, color 0.15s;
+}
+
+.keyboard-key:hover {
+  background-color: var(--key-bg-hover);
+}
+
+.keyboard-key:active {
+  transform: scale(0.92);
+}
+
+/* Wide keys: Enter and Backspace */
+.keyboard-key.wide-key {
+  flex: 1.5;
+  font-size: 0.85rem;
+}
+
+/* Colors for keys based on letters checked */
+.keyboard-key.state-correct {
+  background-color: var(--color-correct);
+  color: #ffffff;
+}
+.keyboard-key.state-correct:hover {
+  filter: brightness(0.9);
+}
+
+.keyboard-key.state-present {
+  background-color: var(--color-present);
+  color: #ffffff;
+}
+.keyboard-key.state-present:hover {
+  filter: brightness(0.9);
+}
+
+.keyboard-key.state-absent {
+  background-color: var(--color-absent);
+  color: #ffffff;
+  opacity: 0.5;
+}
+
+/* Toast System */
+#toast-container {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background-color: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  animation: toastFadeIn 0.15s ease-out;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.toast.fade-out {
+  animation: toastFadeOut 0.2s ease-in forwards;
+}
+
+/* Modals & Dialog Styling */
+dialog {
+  border: 1px solid var(--dialog-border);
+  border-radius: 16px;
+  background-color: var(--dialog-bg);
+  color: var(--text-color);
+  padding: 0;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 10px 30px var(--dialog-shadow);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  outline: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Backdrop */
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 80dvh;
+  overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.dialog-header h2 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: var(--text-color);
+}
+
+.dialog-body {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 60dvh;
+}
+
+/* Scrollbar styles inside modal dialogs */
+.dialog-body::-webkit-scrollbar {
+  width: 6px;
+}
+.dialog-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dialog-body::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+
+/* Help Dialog Rules */
+.intro-text {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.rules-list {
+  list-style-type: none;
+  margin-bottom: 20px;
+}
+
+.rules-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.rules-list li::before {
+  content: "•";
+  color: var(--color-correct);
+  font-size: 1.25rem;
+  position: absolute;
+  left: 0;
+  top: -2px;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background-color: var(--border-default);
+  margin: 18px 0;
+}
+
+.example-item {
+  margin-bottom: 16px;
+}
+
+.example-grid {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 6px;
+  width: 150px;
+}
+
+.example-grid .tile {
+  width: 28px;
+  height: 28px;
+  border-width: 1px;
+  font-size: 0.95rem;
+}
+
+.example-item p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.primary-button {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  border: none;
+  border-radius: 24px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  margin: 10px auto 0 auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.primary-button:hover {
+  opacity: 0.9;
+}
+
+.primary-button:active {
+  transform: scale(0.96);
+}
+
+.primary-button.full-width {
+  width: 100%;
+}
+
+/* Statistics Styles */
+.stats-mode-indicator {
+  font-family: var(--font-title);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-align: center;
+  color: var(--color-present);
+  margin-bottom: 12px;
+}
+
+.stats-grid {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 24px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.stat-val {
+  font-family: var(--font-title);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-lbl {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  max-width: 65px;
+  line-height: 1.2;
+}
+
+/* Guess Distribution Chart */
+.dialog-body h3 {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.distribution-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dist-num {
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: 10px;
+}
+
+.dist-bar-wrapper {
+  flex: 1;
+  background-color: rgba(128, 128, 128, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dist-bar {
+  background-color: var(--border-active);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  text-align: right;
+  min-width: 24px;
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
+
+.dist-bar.highlight {
+  background-color: var(--color-correct);
+}
+
+/* Stats Footer */
+.stats-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-default);
+}
+
+.countdown-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.countdown-time {
+  font-family: var(--font-title);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.share-button {
+  background-color: var(--color-correct);
+  color: #ffffff;
+  border: none;
+  border-radius: 24px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 12px 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(106, 170, 100, 0.3);
+  transition: transform 0.15s, filter 0.15s;
+}
+
+body.high-contrast .share-button {
+  box-shadow: 0 4px 12px rgba(245, 121, 58, 0.3);
+}
+
+.share-button:hover {
+  filter: brightness(0.92);
+}
+
+.share-button:active {
+  transform: scale(0.96);
+}
+
+/* Settings Styles */
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  padding-right: 12px;
+}
+
+.setting-label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.setting-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.settings-divider {
+  border: 0;
+  height: 1px;
+  background-color: rgba(128,128,128,0.12);
+}
+
+.about-section {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.about-credits {
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+/* Premium Toggles / iOS Toggles */
+.switch-container {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.switch-container input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-default);
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 34px;
+}
+
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+input:checked + .switch-slider {
+  background-color: var(--color-correct);
+}
+
+input:checked + .switch-slider:before {
+  transform: translateX(20px);
+}
+
+/* Utility Class */
+.hidden {
+  display: none !important;
+}
+
+/* Animations */
+@keyframes tilePop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tileFlip {
+  0% {
+    transform: rotateX(0deg);
+  }
+  45% {
+    transform: rotateX(90deg);
+  }
+  55% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+@keyframes rowShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+}
+
+
+
+/* Keyboard styling fixes for narrow screens */
+@media (max-width: 360px) {
+  .tile {
+    font-size: 1.3rem;
+  }
+  .keyboard-key {
+    height: 48px;
+    font-size: 1rem;
+  }
+  .keyboard-key.wide-key {
+    font-size: 0.75rem;
+  }
+}
