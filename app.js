@@ -5,7 +5,7 @@ const EPOCH = new Date(2021, 5, 19, 0, 0, 0, 0);
 
 // Global Application State
 const state = {
-  mode: 'daily', // 'daily' or 'practice'
+  mode: 'daily',
   targetWord: '',
   dayIndex: 0,
   guesses: [],
@@ -17,8 +17,11 @@ const state = {
     highContrast: false,
   },
   stats: {
-    daily: { played: 0, wins: 0, currentStreak: 0, maxStreak: 0, guesses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } },
-    practice: { played: 0, wins: 0, currentStreak: 0, maxStreak: 0, guesses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } }
+    played: 0,
+    wins: 0,
+    currentStreak: 0,
+    maxStreak: 0,
+    guesses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
   }
 };
 
@@ -35,9 +38,6 @@ const statWinPct = document.getElementById('stat-win-pct');
 const statStreak = document.getElementById('stat-streak');
 const statMaxStreak = document.getElementById('stat-max-streak');
 const guessDistribution = document.getElementById('guess-distribution');
-const statsActiveMode = document.getElementById('stats-active-mode');
-const statsFooterDaily = document.getElementById('stats-footer-daily');
-const statsFooterPractice = document.getElementById('stats-footer-practice');
 
 // Timer ID for the countdown clock
 let countdownTimerId = null;
@@ -47,17 +47,15 @@ function init() {
   loadSettings();
   loadStats();
   setupTheme();
-  setupModeToggle();
   setupDialogs();
   setupSettingsListeners();
   
-  // Set initial game mode based on URL hash or default
-  const hash = window.location.hash;
-  if (hash === '#practice') {
-    switchMode('practice');
-  } else {
-    switchMode('daily');
+  // Clean hash if practice was there
+  if (window.location.hash) {
+    window.location.hash = '';
   }
+  
+  initDailyGame();
   
   // Build keyboard layout
   buildKeyboard();
@@ -100,10 +98,6 @@ function setupDialogs() {
 
   // Action buttons inside modals
   document.getElementById('btn-share').addEventListener('click', shareResult);
-  document.getElementById('btn-practice-new').addEventListener('click', () => {
-    statsDialog.close();
-    startNewPracticeGame();
-  });
 }
 
 // Keyboard Layout Builder
@@ -233,36 +227,6 @@ function populateBoardFromState() {
   }
 }
 
-// Mode Selector Handler
-function setupModeToggle() {
-  const btnDaily = document.getElementById('mode-daily');
-  const btnPractice = document.getElementById('mode-practice');
-  
-  btnDaily.addEventListener('click', () => switchMode('daily'));
-  btnPractice.addEventListener('click', () => switchMode('practice'));
-}
-
-function switchMode(newMode) {
-  state.mode = newMode;
-  window.location.hash = newMode;
-  
-  // Update UI selector states
-  document.getElementById('mode-daily').className = `mode-button ${newMode === 'daily' ? 'active' : ''}`;
-  document.getElementById('mode-daily').setAttribute('aria-pressed', newMode === 'daily');
-  
-  document.getElementById('mode-practice').className = `mode-button ${newMode === 'practice' ? 'active' : ''}`;
-  document.getElementById('mode-practice').setAttribute('aria-pressed', newMode === 'practice');
-
-  resetKeyboardStyles();
-  buildBoard();
-  
-  if (newMode === 'daily') {
-    initDailyGame();
-  } else {
-    initPracticeGame();
-  }
-}
-
 // Initialize Daily Puzzle State
 function initDailyGame() {
   // 1. Calculate Daily Word
@@ -309,43 +273,6 @@ function initDailyGame() {
     helpDialog.showModal();
     localStorage.setItem('wordle_returning_player', 'true');
   }
-}
-
-// Initialize Practice Puzzle State
-function initPracticeGame() {
-  const storedState = localStorage.getItem('wordle_practice_state');
-  
-  if (storedState) {
-    const saved = JSON.parse(storedState);
-    state.targetWord = saved.targetWord;
-    state.guesses = saved.guesses || [];
-    state.gameStatus = saved.gameStatus || 'IN_PROGRESS';
-    state.currentGuess = '';
-    
-    populateBoardFromState();
-    
-    if (state.gameStatus !== 'IN_PROGRESS') {
-      setTimeout(() => {
-        updateStatsDialog();
-        statsDialog.showModal();
-      }, 800);
-    }
-    return;
-  }
-  
-  startNewPracticeGame();
-}
-
-function startNewPracticeGame() {
-  const randIndex = Math.floor(Math.random() * TARGET_WORDS.length);
-  state.targetWord = TARGET_WORDS[randIndex];
-  state.guesses = [];
-  state.currentGuess = '';
-  state.gameStatus = 'IN_PROGRESS';
-  
-  resetKeyboardStyles();
-  buildBoard();
-  saveGameState();
 }
 
 // Input Controllers (Hardware & Soft Keyboards)
@@ -630,24 +557,15 @@ function saveStats() {
 }
 
 function saveGameState() {
-  if (state.mode === 'daily') {
-    const todayMidnight = new Date();
-    const dateString = new Date(todayMidnight.getFullYear(), todayMidnight.getMonth(), todayMidnight.getDate()).toDateString();
-    
-    const data = {
-      dateString,
-      guesses: state.guesses,
-      gameStatus: state.gameStatus
-    };
-    localStorage.setItem('wordle_daily_state', JSON.stringify(data));
-  } else {
-    const data = {
-      targetWord: state.targetWord,
-      guesses: state.guesses,
-      gameStatus: state.gameStatus
-    };
-    localStorage.setItem('wordle_practice_state', JSON.stringify(data));
-  }
+  const todayMidnight = new Date();
+  const dateString = new Date(todayMidnight.getFullYear(), todayMidnight.getMonth(), todayMidnight.getDate()).toDateString();
+  
+  const data = {
+    dateString,
+    guesses: state.guesses,
+    gameStatus: state.gameStatus
+  };
+  localStorage.setItem('wordle_daily_state', JSON.stringify(data));
 }
 
 // Apply visual themes based on settings
@@ -711,7 +629,7 @@ function setupSettingsListeners() {
 
 // Update Statistics database
 function updateStats(won) {
-  const activeStats = state.mode === 'daily' ? state.stats.daily : state.stats.practice;
+  const activeStats = state.stats;
   
   activeStats.played += 1;
   if (won) {
@@ -731,19 +649,7 @@ function updateStats(won) {
 
 // Format Statistics panels inside Dialog Modal
 function updateStatsDialog() {
-  const activeStats = state.mode === 'daily' ? state.stats.daily : state.stats.practice;
-  
-  // Set title
-  statsActiveMode.textContent = state.mode === 'daily' ? 'DAILY CHALLENGE' : 'PRACTICE MODE';
-  
-  // Toggling footer buttons
-  if (state.mode === 'daily') {
-    statsFooterDaily.classList.remove('hidden');
-    statsFooterPractice.classList.add('hidden');
-  } else {
-    statsFooterDaily.classList.add('hidden');
-    statsFooterPractice.classList.remove('hidden');
-  }
+  const activeStats = state.stats;
 
   // Render numbers
   statPlayed.textContent = activeStats.played;
@@ -819,9 +725,7 @@ function updateCountdown() {
 function shareResult() {
   if (state.gameStatus === 'IN_PROGRESS') return;
   
-  const headerText = state.mode === 'daily' 
-    ? `Wordle Premium ${state.dayIndex} ${state.gameStatus === 'WON' ? state.guesses.length : 'X'}/6`
-    : `Wordle Premium Practice ${state.gameStatus === 'WON' ? state.guesses.length : 'X'}/6`;
+  const headerText = `Wordle ${state.dayIndex} ${state.gameStatus === 'WON' ? state.guesses.length : 'X'}/6`;
   
   const gridEmojis = state.guesses.map(guess => {
     const colors = getLetterColors(guess, state.targetWord);
@@ -866,3 +770,12 @@ function fallbackShareCopy(text) {
 
 // Start App Lifecycle
 window.addEventListener('DOMContentLoaded', init);
+
+// Register Service Worker for offline play and PWA installability
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
+}

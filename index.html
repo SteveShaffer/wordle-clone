@@ -2,9 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wordle Premium - Daily Challenge & Unlimited Practice</title>
-  <meta name="description" content="Play Wordle Premium. Enjoy the classic daily word puzzle and unlimited practice mode with gorgeous themes, streaks tracking, and hard mode.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wordle</title>
+  <meta name="description" content="Play Wordle. Enjoy the classic daily word puzzle with streaks tracking and hard mode.">
+  
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- iOS PWA meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-512.png">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,14 +36,10 @@
         <button id="btn-help" class="icon-button" aria-label="How to play" title="How to Play">
           <i class="fa-regular fa-circle-question"></i>
         </button>
-        <div class="mode-selector" role="group" aria-label="Game Mode">
-          <button id="mode-daily" class="mode-button active" aria-pressed="true">Daily</button>
-          <button id="mode-practice" class="mode-button" aria-pressed="false">Practice</button>
-        </div>
       </div>
       
       <div class="header-center">
-        <h1>Wordle<span class="logo-accent">Premium</span></h1>
+        <h1>Wordle</h1>
       </div>
       
       <div class="header-right">
@@ -78,8 +82,7 @@
         
         <ul class="rules-list">
           <li>The color of the tiles will change to show how close your guess was to the word.</li>
-          <li>In <strong>Daily Mode</strong>, a new secret word is generated every day.</li>
-          <li>In <strong>Practice Mode</strong>, you can play as many times as you like.</li>
+          <li>A new secret word is generated every day.</li>
         </ul>
 
         <hr class="divider">
@@ -134,7 +137,7 @@
         <button class="close-button" aria-label="Close dialog" onclick="this.closest('dialog').close()">&times;</button>
       </header>
       <div class="dialog-body">
-        <div class="stats-mode-indicator" id="stats-active-mode">DAILY CHALLENGE</div>
+
         
         <!-- Stats Numbers Grid -->
         <div class="stats-grid">
@@ -196,12 +199,6 @@
             Share <i class="fa-solid fa-share-nodes"></i>
           </button>
         </div>
-
-        <div class="stats-footer hidden" id="stats-footer-practice">
-          <button id="btn-practice-new" class="primary-button full-width">
-            Play Again <i class="fa-solid fa-rotate-right"></i>
-          </button>
-        </div>
       </div>
     </div>
   </dialog>
@@ -258,8 +255,8 @@
         <hr class="settings-divider">
 
         <div class="about-section">
-          <p>Wordle Premium v1.0.0</p>
-          <p class="about-credits">Created with premium styling & localStorage tracking.</p>
+          <p>Wordle v1.0.0</p>
+          <p class="about-credits">Created with custom styling & localStorage tracking.</p>
         </div>
       </div>
     </div>
