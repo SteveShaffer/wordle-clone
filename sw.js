@@ -1,9 +1,9 @@
-const CACHE_NAME = 'wordle-cache-v6';
+const CACHE_NAME = 'wordle-cache-v7';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=1.0.6',
-  './app.js?v=1.0.6',
+  './styles.css?v=1.0.7',
+  './app.js?v=1.0.7',
   './words.js',
   './manifest.json',
   './icon-512.png',
@@ -40,26 +40,53 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// Fetch Event - Serve from Cache first, fallback to network
+// Fetch Event - Network-First for HTML/entry-points, Cache-First for versioned static assets
 self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      
-      return fetch(e.request).then((networkResponse) => {
-        // Dynamically cache non-local GET requests (e.g. webfont files from gstatic)
-        if (e.request.method === 'GET' && (e.request.url.startsWith('http') || e.request.url.startsWith('https'))) {
+  const url = new URL(e.request.url);
+  
+  // Identify if it's an entry point document (navigation or root HTML)
+  const isHtml = e.request.mode === 'navigate' || 
+                 url.pathname === '/' || 
+                 url.pathname.endsWith('/index.html') || 
+                 url.pathname.endsWith('/');
+                 
+  if (isHtml) {
+    // Network-First strategy
+    e.respondWith(
+      fetch(e.request)
+        .then((networkResponse) => {
+          // Cache the fresh copy
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(e.request, networkResponse.clone());
             return networkResponse;
           });
+        })
+        .catch(() => {
+          // If network fails (offline), load from cache
+          return caches.match(e.request);
+        })
+    );
+  } else {
+    // Cache-First strategy for static assets
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        return networkResponse;
-      }).catch((err) => {
-        console.error('[Service Worker] Fetch failed:', err);
-      });
-    })
-  );
+        
+        return fetch(e.request).then((networkResponse) => {
+          // Dynamically cache GET requests (e.g. webfont files from gstatic)
+          if (e.request.method === 'GET' && (e.request.url.startsWith('http') || e.request.url.startsWith('https'))) {
+            return caches.open(CACHE_NAME).then((cache) => {
+              cache.put(e.request, networkResponse.clone());
+              return networkResponse;
+            });
+          }
+          return networkResponse;
+        }).catch((err) => {
+          console.error('[Service Worker] Fetch failed:', err);
+        });
+      })
+    );
+  }
 });
