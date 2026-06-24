@@ -754,7 +754,12 @@ function shareResult() {
     }).join('');
   }).join('\n');
 
-  const shareText = `${headerText}\n\n${gridEmojis}\n\nPlay here: ${window.location.origin}${window.location.pathname}`;
+  let pathname = window.location.pathname;
+  if (pathname.endsWith('index.html')) {
+    pathname = pathname.slice(0, -10); // Remove "index.html" (length 10)
+  }
+  const shareUrl = `${window.location.origin}${pathname}`;
+  const shareText = `${headerText}\n\n${gridEmojis}\n\nPlay here: ${shareUrl}`;
 
   // Use Clipboard API if available, fallback to textarea copy
   if (navigator.clipboard && navigator.clipboard.writeText) {
