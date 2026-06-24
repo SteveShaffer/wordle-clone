@@ -56,10 +56,12 @@ function init() {
   }
   
   buildBoard();
-  initDailyGame();
   
   // Build keyboard layout
   buildKeyboard();
+  
+  // Initialize daily game and restore state (which colors keyboard keys)
+  initDailyGame();
   
   // Set focus to body to capture keypresses
   document.body.focus();
