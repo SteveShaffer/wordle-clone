@@ -1,9 +1,9 @@
-const CACHE_NAME = 'wordle-cache-v7';
+const CACHE_NAME = 'wordle-cache-v8';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=1.0.7',
-  './app.js?v=1.0.7',
+  './styles.css?v=1.0.8',
+  './app.js?v=1.0.8',
   './words.js',
   './manifest.json',
   './icon-512.png',

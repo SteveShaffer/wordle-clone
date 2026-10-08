@@ -1,5 +1,29 @@
 import { TARGET_WORDS, VALID_GUESSES } from './words.js';
 
+// Deterministic PRNG and Fisher-Yates shuffle to ensure words are pseudo-randomly
+// distributed across the alphabet rather than strictly alphabetical,
+// while remaining 100% deterministic so every player gets the exact same word each day.
+function mulberry32(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function shuffle(array, seed = 0x48617368) {
+  const result = [...array];
+  const rng = mulberry32(seed);
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+const SHUFFLED_TARGET_WORDS = shuffle(TARGET_WORDS);
+
 // Epoch for Daily Wordle (June 19, 2021)
 const EPOCH = new Date(2021, 5, 19, 0, 0, 0, 0);
 
@@ -237,8 +261,8 @@ function initDailyGame() {
   const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   state.dayIndex = Math.floor((todayMidnight - EPOCH) / (24 * 60 * 60 * 1000));
   
-  const wordIndex = state.dayIndex % TARGET_WORDS.length;
-  state.targetWord = TARGET_WORDS[wordIndex];
+  const wordIndex = state.dayIndex % SHUFFLED_TARGET_WORDS.length;
+  state.targetWord = SHUFFLED_TARGET_WORDS[wordIndex];
   
   // 2. Load stored Daily state
   const storedState = localStorage.getItem('wordle_daily_state');
@@ -247,6 +271,9 @@ function initDailyGame() {
   if (storedState) {
     const saved = JSON.parse(storedState);
     if (saved.dateString === dateString) {
+      if (saved.targetWord) {
+        state.targetWord = saved.targetWord;
+      }
       state.guesses = saved.guesses || [];
       state.gameStatus = saved.gameStatus || 'IN_PROGRESS';
       state.currentGuess = '';
@@ -576,6 +603,7 @@ function saveGameState() {
   
   const data = {
     dateString,
+    targetWord: state.targetWord,
     guesses: state.guesses,
     gameStatus: state.gameStatus
   };
