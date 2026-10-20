@@ -39,6 +39,7 @@ const state = {
     hardMode: false,
     darkTheme: true,
     highContrast: false,
+    shareMode: 'standard', // 'standard' or 'redacted'
   },
   stats: {
     played: 0,
@@ -101,8 +102,11 @@ function setupDialogs() {
   });
   document.getElementById('btn-settings').addEventListener('click', () => settingsDialog.showModal());
   
-  // Manage countdown lifecycle on dialog close
-  statsDialog.addEventListener('close', stopCountdown);
+  // Manage countdown and dropdown lifecycle on dialog close
+  statsDialog.addEventListener('close', () => {
+    stopCountdown();
+    closeShareDropdown();
+  });
 
   // Fallback for light-dismiss (clicking backdrop) in browsers without native support (Safari)
   [helpDialog, statsDialog, settingsDialog].forEach(dialog => {
@@ -124,7 +128,37 @@ function setupDialogs() {
   });
 
   // Action buttons inside modals
-  document.getElementById('btn-share').addEventListener('click', shareResult);
+  document.getElementById('btn-share').addEventListener('click', () => {
+    closeShareDropdown();
+    shareResult();
+  });
+
+  const btnShareChip = document.getElementById('btn-share-chip');
+  if (btnShareChip) {
+    btnShareChip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleShareDropdown();
+    });
+  }
+
+  // Dropdown menu option handlers
+  document.querySelectorAll('.share-menu-option').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const mode = btn.getAttribute('data-mode');
+      setShareMode(mode);
+      closeShareDropdown();
+      shareResult();
+    });
+  });
+
+  // Dismiss share dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const container = document.getElementById('share-container');
+    if (container && !container.contains(e.target)) {
+      closeShareDropdown();
+    }
+  });
 }
 
 // Keyboard Layout Builder
@@ -563,11 +597,21 @@ function triggerConfetti() {
 function loadSettings() {
   const stored = localStorage.getItem('wordle_settings');
   if (stored) {
-    state.settings = JSON.parse(stored);
+    try {
+      state.settings = { ...state.settings, ...JSON.parse(stored) };
+    } catch (e) {
+      console.error('Failed to parse settings:', e);
+    }
   } else {
     // Default to dark theme if user's system prefers it
     const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
     state.settings.darkTheme = !prefersLight;
+  }
+
+  // Load sticky share mode choice
+  const savedShareMode = localStorage.getItem('wordle_share_mode');
+  if (savedShareMode === 'redacted' || savedShareMode === 'standard') {
+    state.settings.shareMode = savedShareMode;
   }
 }
 
@@ -728,6 +772,58 @@ function updateStatsDialog() {
     // Set width and minimum width for aesthetics
     bar.style.width = maxGuessVal > 0 ? `calc(${pctWidth}% + 12px)` : '8%';
   }
+
+  updateShareButtonUI();
+  closeShareDropdown();
+}
+
+// Share button & dropdown state controllers
+function updateShareButtonUI() {
+  const shareText = document.getElementById('btn-share-text');
+  const isRedacted = state.settings.shareMode === 'redacted';
+  if (shareText) {
+    shareText.textContent = isRedacted ? 'Share Redacted' : 'Share';
+  }
+  const options = document.querySelectorAll('.share-menu-option');
+  options.forEach(opt => {
+    const mode = opt.getAttribute('data-mode');
+    if (mode === state.settings.shareMode) {
+      opt.classList.add('selected');
+    } else {
+      opt.classList.remove('selected');
+    }
+  });
+}
+
+function setShareMode(mode) {
+  state.settings.shareMode = mode;
+  saveSettings();
+  localStorage.setItem('wordle_share_mode', mode);
+  updateShareButtonUI();
+}
+
+function toggleShareDropdown() {
+  const menu = document.getElementById('share-dropdown-menu');
+  const chip = document.getElementById('btn-share-chip');
+  if (!menu || !chip) return;
+  const isHidden = menu.classList.contains('hidden');
+  if (isHidden) {
+    menu.classList.remove('hidden');
+    chip.setAttribute('aria-expanded', 'true');
+    chip.classList.add('active');
+  } else {
+    closeShareDropdown();
+  }
+}
+
+function closeShareDropdown() {
+  const menu = document.getElementById('share-dropdown-menu');
+  const chip = document.getElementById('btn-share-chip');
+  if (menu) menu.classList.add('hidden');
+  if (chip) {
+    chip.setAttribute('aria-expanded', 'false');
+    chip.classList.remove('active');
+  }
 }
 
 // Countdown Clock for Daily Puzzle
@@ -768,8 +864,14 @@ function shareResult() {
   if (state.gameStatus === 'IN_PROGRESS') return;
   
   const headerText = `Wordle ${state.dayIndex} ${state.gameStatus === 'WON' ? state.guesses.length : 'X'}/6`;
+  const isRedacted = state.settings.shareMode === 'redacted';
+  const lastGuessIdx = state.guesses.length - 1;
   
-  const gridEmojis = state.guesses.map(guess => {
+  const gridEmojis = state.guesses.map((guess, idx) => {
+    // In redacted mode, non-terminal rows are redacted with ⬛ so player guesses aren't spoiled
+    if (isRedacted && idx < lastGuessIdx) {
+      return '⬛⬛⬛⬛⬛';
+    }
     const colors = getLetterColors(guess, state.targetWord);
     return colors.map(c => {
       if (c === 'correct') {
@@ -788,18 +890,19 @@ function shareResult() {
   }
   const shareUrl = `${window.location.origin}${pathname}`;
   const shareText = `${headerText}\n\n${gridEmojis}\n\nPlay here: ${shareUrl}`;
+  const toastMsg = isRedacted ? 'Copied redacted score to clipboard' : 'Copied to clipboard';
 
   // Use Clipboard API if available, fallback to textarea copy
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(shareText)
-      .then(() => showToast('Copied to clipboard'))
-      .catch(() => fallbackShareCopy(shareText));
+      .then(() => showToast(toastMsg))
+      .catch(() => fallbackShareCopy(shareText, toastMsg));
   } else {
-    fallbackShareCopy(shareText);
+    fallbackShareCopy(shareText, toastMsg);
   }
 }
 
-function fallbackShareCopy(text) {
+function fallbackShareCopy(text, toastMsg = 'Copied to clipboard') {
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.style.position = 'fixed'; // prevent scroll placement
@@ -807,7 +910,7 @@ function fallbackShareCopy(text) {
   textarea.select();
   try {
     document.execCommand('copy');
-    showToast('Copied to clipboard');
+    showToast(toastMsg);
   } catch (err) {
     console.error('Failed to copy text: ', err);
     showToast('Failed to copy stats');

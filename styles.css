@@ -633,33 +633,124 @@ dialog::backdrop {
   line-height: 1.1;
 }
 
-.share-button {
+.share-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.share-btn-group {
+  display: inline-flex;
+  align-items: stretch;
   background-color: var(--color-correct);
-  color: #ffffff;
-  border: none;
   border-radius: 24px;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 12px 28px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   box-shadow: 0 4px 12px rgba(106, 170, 100, 0.3);
   transition: transform 0.15s, filter 0.15s;
 }
 
-body.high-contrast .share-button {
+body.high-contrast .share-btn-group {
   box-shadow: 0 4px 12px rgba(245, 121, 58, 0.3);
 }
 
-.share-button:hover {
+.share-btn-group:hover {
   filter: brightness(0.92);
 }
 
-.share-button:active {
-  transform: scale(0.96);
+.share-btn-group:active {
+  transform: scale(0.97);
+}
+
+.share-button {
+  background: none;
+  color: #ffffff;
+  border: none;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 14px 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
+  white-space: nowrap;
+}
+
+.share-chip-button {
+  background: none;
+  color: #ffffff;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 12px 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+  transition: background-color 0.15s;
+}
+
+.share-chip-button:hover,
+.share-chip-button.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.share-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background-color: var(--dialog-bg);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  padding: 6px;
+  min-width: 180px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: toastFadeIn 0.15s ease-out;
+}
+
+.share-dropdown-menu.hidden {
+  display: none !important;
+}
+
+.share-menu-option {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  transition: background-color 0.15s;
+  width: 100%;
+}
+
+.share-menu-option:hover {
+  background-color: rgba(128, 128, 128, 0.18);
+}
+
+.share-menu-option .option-check {
+  font-size: 0.75rem;
+  width: 14px;
+  color: var(--color-correct);
+  visibility: hidden;
+}
+
+.share-menu-option.selected .option-check {
+  visibility: visible;
 }
 
 /* Settings Styles */

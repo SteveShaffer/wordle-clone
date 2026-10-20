@@ -26,7 +26,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=1.0.8">
+  <link rel="stylesheet" href="styles.css?v=1.0.9">
 </head>
 <body>
   <div id="game-container">
@@ -195,9 +195,26 @@
             <span class="countdown-label">NEXT WORDLE</span>
             <span class="countdown-time" id="next-wordle-timer">00:00:00</span>
           </div>
-          <button id="btn-share" class="share-button">
-            Share <i class="fa-solid fa-share-nodes"></i>
-          </button>
+          <div class="share-container" id="share-container">
+            <div class="share-btn-group">
+              <button id="btn-share" class="share-button" aria-label="Share score">
+                <span id="btn-share-text">Share</span> <i class="fa-solid fa-share-nodes"></i>
+              </button>
+              <button id="btn-share-chip" class="share-chip-button" aria-label="Share options" aria-haspopup="true" aria-expanded="false" title="Share options">
+                <i class="fa-solid fa-caret-down"></i>
+              </button>
+            </div>
+            <div id="share-dropdown-menu" class="share-dropdown-menu hidden" role="menu" aria-label="Share options menu">
+              <button class="share-menu-option" data-mode="standard" role="menuitem">
+                <i class="fa-solid fa-check option-check" aria-hidden="true"></i>
+                <span>Standard</span>
+              </button>
+              <button class="share-menu-option" data-mode="redacted" role="menuitem">
+                <i class="fa-solid fa-check option-check" aria-hidden="true"></i>
+                <span>Share Redacted ⬛</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -263,6 +280,6 @@
   </dialog>
 
   <!-- App Logic Module -->
-  <script type="module" src="app.js?v=1.0.8"></script>
+  <script type="module" src="app.js?v=1.0.9"></script>
 </body>
 </html>
