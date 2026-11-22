@@ -1,4 +1,4 @@
-import { TARGET_WORDS, VALID_GUESSES } from './words.js';
+import { TARGET_WORDS, VALID_GUESSES } from './words.js?v=1.0.10';
 
 // Deterministic PRNG and Fisher-Yates shuffle to ensure words are pseudo-randomly
 // distributed across the alphabet rather than strictly alphabetical,
@@ -12,7 +12,8 @@ function mulberry32(seed) {
   };
 }
 
-function shuffle(array, seed = 0x48617368) {
+// Seed bumped after curating TARGET_WORDS to avoid repeating recently played daily words.
+function shuffle(array, seed = 0x4861736e) {
   const result = [...array];
   const rng = mulberry32(seed);
   for (let i = result.length - 1; i > 0; i--) {
@@ -305,12 +306,15 @@ function initDailyGame() {
   if (storedState) {
     const saved = JSON.parse(storedState);
     if (saved.dateString === dateString) {
-      if (saved.targetWord) {
-        state.targetWord = saved.targetWord;
-      }
       state.guesses = saved.guesses || [];
       state.gameStatus = saved.gameStatus || 'IN_PROGRESS';
       state.currentGuess = '';
+
+      if (saved.targetWord && state.guesses.length > 0) {
+        state.targetWord = saved.targetWord;
+      } else if (saved.targetWord !== state.targetWord) {
+        saveGameState();
+      }
       
       populateBoardFromState();
       
