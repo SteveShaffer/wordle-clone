@@ -1,4 +1,4 @@
-import { TARGET_WORDS, VALID_GUESSES } from './words.js?v=1.0.10';
+import { TARGET_WORDS, VALID_GUESSES } from './words.js?v=1.0.11';
 
 // Deterministic PRNG and Fisher-Yates shuffle to ensure words are pseudo-randomly
 // distributed across the alphabet rather than strictly alphabetical,
@@ -561,10 +561,23 @@ function evaluateGameResolution(guess) {
 
 // Toast alerts helper
 function showToast(message, duration = 1500) {
+  let targetContainer = toastContainer;
+  const openDialog = document.querySelector('dialog[open]');
+  if (openDialog) {
+    let dialogToasts = openDialog.querySelector('.dialog-toast-container');
+    if (!dialogToasts) {
+      dialogToasts = document.createElement('div');
+      dialogToasts.className = 'dialog-toast-container';
+      dialogToasts.setAttribute('aria-live', 'polite');
+      openDialog.appendChild(dialogToasts);
+    }
+    targetContainer = dialogToasts;
+  }
+
   const toast = document.createElement('div');
   toast.classList.add('toast');
   toast.textContent = message;
-  toastContainer.appendChild(toast);
+  targetContainer.appendChild(toast);
   
   setTimeout(() => {
     toast.classList.add('fade-out');
@@ -863,8 +876,23 @@ function updateCountdown() {
   if (el) el.textContent = formatted;
 }
 
+let shareButtonFeedbackTimer = null;
+
+function showShareButtonFeedback(label = 'Copied!') {
+  const shareTextEl = document.getElementById('btn-share-text');
+  if (!shareTextEl) return;
+  if (shareButtonFeedbackTimer) {
+    clearTimeout(shareButtonFeedbackTimer);
+  }
+  shareTextEl.textContent = label;
+  shareButtonFeedbackTimer = setTimeout(() => {
+    shareButtonFeedbackTimer = null;
+    updateShareButtonUI();
+  }, 2000);
+}
+
 // Share emoji grid representation to Clipboard
-function shareResult() {
+async function shareResult() {
   if (state.gameStatus === 'IN_PROGRESS') return;
   
   const headerText = `Wordle ${state.dayIndex} ${state.gameStatus === 'WON' ? state.guesses.length : 'X'}/6`;
@@ -896,30 +924,59 @@ function shareResult() {
   const shareText = `${headerText}\n\n${gridEmojis}\n\nPlay here: ${shareUrl}`;
   const toastMsg = isRedacted ? 'Copied redacted score to clipboard' : 'Copied to clipboard';
 
-  // Use Clipboard API if available, fallback to textarea copy
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(shareText)
-      .then(() => showToast(toastMsg))
-      .catch(() => fallbackShareCopy(shareText, toastMsg));
+  let copied = false;
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      copied = true;
+    } catch (err) {
+      copied = false;
+    }
+  }
+
+  if (!copied) {
+    copied = fallbackShareCopy(shareText);
+  }
+
+  if (copied) {
+    showShareButtonFeedback('Copied!');
+    showToast(toastMsg);
   } else {
-    fallbackShareCopy(shareText, toastMsg);
+    showShareButtonFeedback('Copy failed');
+    showToast('Failed to copy stats');
   }
 }
 
-function fallbackShareCopy(text, toastMsg = 'Copied to clipboard') {
+function fallbackShareCopy(text) {
+  // Append inside any open modal <dialog> because document.body is inert while showModal() is active
+  const host = document.querySelector('dialog[open]') || document.body;
+  if (!host) return false;
+
   const textarea = document.createElement('textarea');
   textarea.value = text;
-  textarea.style.position = 'fixed'; // prevent scroll placement
-  document.body.appendChild(textarea);
-  textarea.select();
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.top = '0';
+  textarea.style.left = '-9999px';
+  textarea.style.opacity = '0';
+  host.appendChild(textarea);
+
+  let copied = false;
   try {
-    document.execCommand('copy');
-    showToast(toastMsg);
+    textarea.focus();
+    if (typeof textarea.setSelectionRange === 'function') {
+      textarea.setSelectionRange(0, text.length);
+    } else {
+      textarea.select();
+    }
+    copied = Boolean(document.execCommand('copy'));
   } catch (err) {
     console.error('Failed to copy text: ', err);
-    showToast('Failed to copy stats');
+    copied = false;
+  } finally {
+    textarea.remove();
   }
-  document.body.removeChild(textarea);
+  return copied;
 }
 
 // Start App Lifecycle
