@@ -309,7 +309,8 @@ html, body {
 }
 
 /* Toast System */
-#toast-container {
+#toast-container,
+.dialog-toast-container {
   position: absolute;
   top: 12%;
   left: 50%;
@@ -319,6 +320,10 @@ html, body {
   flex-direction: column;
   gap: 8px;
   pointer-events: none;
+}
+
+.dialog-toast-container {
+  top: 14px;
 }
 
 .toast {

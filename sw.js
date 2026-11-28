@@ -1,10 +1,10 @@
-const CACHE_NAME = 'wordle-cache-v10';
+const CACHE_NAME = 'wordle-cache-v11';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=1.0.10',
-  './app.js?v=1.0.10',
-  './words.js?v=1.0.10',
+  './styles.css?v=1.0.11',
+  './app.js?v=1.0.11',
+  './words.js?v=1.0.11',
   './manifest.json',
   './icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
